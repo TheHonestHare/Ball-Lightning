@@ -4,12 +4,12 @@
     // In a future version of Zig it will be used for package deduplication.
     .version = "0.0.0",
     .dependencies = .{
-        .zglfw = .{.path = "lib/zglfw"},
-        .zflecs = .{.path = "lib/zflecs"},
-        .zgpu = .{.path = "lib/zgpu"},
-        .zmath = .{.path = "lib/zmath"},
-        .zjobs = .{.path = "lib/zjobs"},
-        .system_sdk = .{.path = "lib/system-sdk"},
+        .zglfw = .{ .path = "lib/zglfw" },
+        .zflecs = .{ .path = "lib/zflecs" },
+        .zgpu = .{ .path = "lib/zgpu" },
+        .zmath = .{ .path = "lib/zmath" },
+        .zjobs = .{ .path = "lib/zjobs" },
+        .system_sdk = .{ .path = "lib/system-sdk" },
         .zpool = .{ .path = "lib/zpool" },
         .dawn_x86_64_windows_gnu = .{
             .url = "https://github.com/michal-z/webgpu_dawn-x86_64-windows-gnu/archive/d3a68014e6b6b53fd330a0ccba99e4dcfffddae5.tar.gz",
@@ -30,6 +30,10 @@
         .dawn_x86_64_macos = .{
             .url = "https://github.com/michal-z/webgpu_dawn-x86_64-macos/archive/901716b10b31ce3e0d3fe479326b41e91d59c661.tar.gz",
             .hash = "1220b1f02f2f7edd98a078c64e3100907d90311d94880a3cc5927e1ac009d002667a",
+        },
+        .zigimg = .{
+            .url = "https://github.com/zigimg/zigimg/archive/d9dbbe22b5f7b5f1f4772169ed93ffeed8e8124d.zip",
+            .hash = "122013646f7038ecc71ddf8a0d7de346d29a6ec40140af57f838b0a975c69af512b0",
         },
     },
     .paths = .{

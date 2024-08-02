@@ -17,29 +17,31 @@ pub fn build(b: *std.Build) void {
     });
     @import("system_sdk").addLibraryPathsTo(exe);
 
-    const zglfw_dep = b.dependency("zglfw", .{.target = target, .optimize = optimize});
+    const zglfw_dep = b.dependency("zglfw", .{ .target = target, .optimize = optimize });
     exe.root_module.addImport("zglfw", zglfw_dep.module("root"));
     exe.linkLibrary(zglfw_dep.artifact("glfw"));
-    
 
-    const zjobs_dep = b.dependency("zjobs", .{.target = target, .optimize = optimize});
+    const zjobs_dep = b.dependency("zjobs", .{ .target = target, .optimize = optimize });
     exe.root_module.addImport("zjobs", zjobs_dep.module("root"));
 
-    const zflecs_dep = b.dependency("zflecs", .{.target = target, .optimize = optimize});
+    const zflecs_dep = b.dependency("zflecs", .{ .target = target, .optimize = optimize });
     exe.root_module.addImport("zflecs", zflecs_dep.module("root"));
     exe.linkLibrary(zflecs_dep.artifact("flecs"));
 
     @import("zgpu").addLibraryPathsTo(exe);
     const zgpu_dep = b.dependency("zgpu", .{
-        .target = target, 
+        .target = target,
         .optimize = optimize,
+        .dawn_skip_validation = false,
     });
     exe.root_module.addImport("zgpu", zgpu_dep.module("root"));
     exe.linkLibrary(zgpu_dep.artifact("zdawn"));
 
-    
-    const zmath_dep = b.dependency("zmath", .{.target = target, .optimize = optimize});
+    const zmath_dep = b.dependency("zmath", .{ .target = target, .optimize = optimize });
     exe.root_module.addImport("zmath", zmath_dep.module("root"));
+
+    const zigimg_dep = b.dependency("zigimg", .{ .target = target, .optimize = optimize });
+    exe.root_module.addImport("img", zigimg_dep.module("zigimg"));
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
