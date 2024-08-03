@@ -3,6 +3,8 @@ const glfw = @import("zglfw");
 const zgpu = @import("zgpu");
 const sprite = @import("sprite/main.zig");
 const camera = @import("camera.zig");
+const object = @import("object.zig");
+const mat = @import("sprite/material.zig");
 const wgpu = zgpu.wgpu;
 
 pub const Bind = struct {
@@ -14,15 +16,49 @@ pub const Bind = struct {
 pub const Group = struct {
     layout: zgpu.BindGroupLayoutHandle,
     bindgroup: zgpu.BindGroupHandle,
+
+    pub fn deinit(self: @This(), gctx: *zgpu.GraphicsContext) void {
+        gctx.releaseResource(self.layout);
+        gctx.releaseResource(self.bindgroup);
+    }
 };
 
-pub const RenderState = struct {
+pub const RenderGlobals = struct {
     gctx: *zgpu.GraphicsContext,
-    sprite_state: sprite.State,
+    sprite_state: sprite.RenderState,
     camera_group: Group,
+    pub fn deinit(state: RenderGlobals, ally: std.mem.Allocator) void {
+        // TODO: is this neccesary except last
+        state.camera_group.deinit(state.gctx);
+        state.sprite_state.deinit(state.gctx);
+        state.gctx.destroy(ally);
+    }
 };
 
-pub fn init(ally: std.mem.Allocator, window: *glfw.Window) !RenderState {
+pub const SceneState = struct {
+    object: object.State,
+    sprite: sprite.SceneState,
+    // TODO: how important is actually keeping this around vs just free
+    all_mats: std.ArrayListUnmanaged(mat.Material),
+
+    pub fn init(globals: RenderGlobals, ally: std.mem.Allocator) !SceneState {
+        // TODO: extract creating the levels into somewher else
+        const init_lvl = @import("level1.zig").init(ally) catch @panic("TODO");
+        const obj_state = try object.init(init_lvl.solids, init_lvl.player, ally);
+        const sprite_state = try sprite.SceneState.init(globals.gctx, obj_state, ally, init_lvl.all_mats, globals.sprite_state.bindgroup_layout);
+        return .{
+            .object = obj_state,
+            .sprite = sprite_state,
+            .all_mats = init_lvl.all_mats,
+        };
+    }
+    pub fn deinit(self: @This()) void {
+        _ = self;
+        @compileError("TODO");
+    }
+};
+
+pub fn init(ally: std.mem.Allocator, window: *glfw.Window) !RenderGlobals {
     const gctx = try zgpu.GraphicsContext.create(ally, .{
         .window = window,
         .fn_getTime = @ptrCast(&glfw.getTime),
@@ -36,9 +72,8 @@ pub fn init(ally: std.mem.Allocator, window: *glfw.Window) !RenderState {
     }, .{ .present_mode = .mailbox });
     errdefer gctx.destroy(ally);
 
-    const level1mats = try @import("level1.zig").init(ally);
     const camera_group = camera.init(gctx);
-    const sprite_state = try sprite.initRender(gctx, ally, camera_group.layout, 100, level1mats);
+    const sprite_state = try sprite.initRender(gctx, ally, camera_group.layout);
 
     return .{
         .gctx = gctx,
@@ -47,11 +82,7 @@ pub fn init(ally: std.mem.Allocator, window: *glfw.Window) !RenderState {
     };
 }
 
-pub fn deinit(ally: std.mem.Allocator, state: *RenderState) void {
-    state.gctx.destroy(ally);
-}
-
-pub fn draw(state: RenderState) void {
+pub fn draw(state: RenderGlobals, scene: SceneState) void {
     const back_buffer_view = state.gctx.swapchain.getCurrentTextureView();
     defer back_buffer_view.release();
 
@@ -59,7 +90,7 @@ pub fn draw(state: RenderState) void {
     const commands = commands: {
         const encoder = state.gctx.device.createCommandEncoder(null);
         defer encoder.release();
-        sprite.draw(state.gctx, state, encoder, back_buffer_view, camera_offs);
+        scene.sprite.draw(state.gctx, state, encoder, back_buffer_view, camera_offs);
         break :commands encoder.finish(null);
     };
     defer commands.release();

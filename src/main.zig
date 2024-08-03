@@ -41,10 +41,11 @@ fn renderLoop(window: *glfw.Window, window_reset: *std.Thread.ResetEvent) !void 
     const allocator = gpa.allocator();
 
     var state = try render.init(allocator, window);
-    defer render.deinit(allocator, &state);
+    defer state.deinit(allocator);
+    const scene_state = try render.SceneState.init(state, allocator);
     window_reset.set();
     while (true) {
-        render.draw(state);
+        render.draw(state, scene_state);
         _ = FPS.rmw(.Add, 1, .monotonic);
     }
 }

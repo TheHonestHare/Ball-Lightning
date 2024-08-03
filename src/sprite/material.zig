@@ -23,6 +23,7 @@ pub fn makeMatList() std.ArrayListUnmanaged(Material) {
 
 pub fn initRender(gctx: *zgpu.GraphicsContext, ally: std.mem.Allocator, bindnum: u32) !RenderState {
     var sheet = try img.ImageUnmanaged.fromMemory(ally, @embedFile("spritesheet.png")[0..]);
+    defer sheet.deinit(ally);
     try sheet.convert(ally, .rgba32);
     const width: u32 = @intCast(sheet.width);
     const height: u32 = @intCast(sheet.height);
@@ -46,7 +47,9 @@ pub fn initRender(gctx: *zgpu.GraphicsContext, ally: std.mem.Allocator, bindnum:
         u8,
         sheet.rawBytes(),
     );
-    const entry_layout = zgpu.textureEntry(bindnum, .{ .fragment = true, }, .float, .tvdim_2d, false);
+    const entry_layout = zgpu.textureEntry(bindnum, .{
+        .fragment = true,
+    }, .float, .tvdim_2d, false);
     // TODO: move buffer creation to here?
     const texture_view_handle = gctx.createTextureView(texture, .{ .format = .rgba8_unorm });
     const entry: zgpu.BindGroupEntryInfo = .{

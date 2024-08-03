@@ -46,7 +46,6 @@ struct VertexOut {
     offsets.y *= atlas_dims.y / atlas_dims.x;
     var pos_clip: vec4f = vec4f(botleft_clip.xy + offsets, botleft_clip.zw);
     pos_clip.x /= asp_rat;
-    //pos_clip.y *= atlas_dims.y / atlas_dims.x;
     return VertexOut(pos_clip, vec2f(pos_mask), pos[inst].material);
 }
 
